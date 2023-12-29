@@ -1,6 +1,6 @@
-import { Request, Response } from 'express';
-import categoriesModel from '../models/Category';
-import postsModel from '../models/Post';
+import { Request, Response } from "express";
+import categoriesModel from "../models/Category";
+import postsModel from "../models/Post";
 
 const Category = categoriesModel;
 const Post = postsModel;
@@ -8,7 +8,7 @@ const Post = postsModel;
 export default {
   // GET
   async read(request: Request, response: Response) {
-    const categoryList = await Category.find().sort({ date: 'desc' });
+    const categoryList = await Category.find().sort({ date: "desc" });
 
     return response.json(categoryList);
   },
@@ -28,7 +28,7 @@ export default {
     if (categoryList) return response.json(categoryList);
 
     return response.status(400).json({
-      error: 'Houve um erro interno ao carregar a lista de categorias',
+      error: "Houve um erro interno ao carregar a lista de categorias",
     });
   },
 
@@ -39,7 +39,7 @@ export default {
     if (category) return response.json(category);
 
     return response.status(400).json({
-      error: 'Houve um erro interno ao carregar a categoria',
+      error: "Houve um erro interno ao carregar a categoria",
     });
   },
 
@@ -51,10 +51,12 @@ export default {
     if (!name || !slug)
       return response
         .status(400)
-        .json({ error: 'É necessário preencher um Nome e um Slug' });
+        .json({ error: "É necessário preencher um Nome e um Slug" });
 
-    if(name.length < 2) {
-      return response.status(400).json({error: 'Nome da Categoria deve ser maior'})
+    if (name.length < 2) {
+      return response
+        .status(400)
+        .json({ error: "Nome da Categoria deve ser maior" });
     }
 
     const categoryCreated = await Category.create({
@@ -62,11 +64,14 @@ export default {
       slug,
     });
 
-    if (categoryCreated) return response.status(200).json({message: 'Categoria criada com sucesso!', categoryCreated});
+    if (categoryCreated)
+      return response
+        .status(200)
+        .json({ message: "Categoria criada com sucesso!", categoryCreated });
 
     return response
       .status(401)
-      .json({ error: ' Houve um erro ao salvar a categoria!' });
+      .json({ error: " Houve um erro ao salvar a categoria!" });
   },
 
   // PUT
@@ -81,14 +86,14 @@ export default {
       {
         name,
         slug,
-      },
+      }
     );
 
     if (categoryUpdated) return response.json(categoryUpdated);
 
     return response
       .status(401)
-      .json({ error: 'Não foi encontrada a categoria para atualizar!' });
+      .json({ error: "Não foi encontrada a categoria para atualizar!" });
   },
 
   // DELETE
@@ -101,6 +106,6 @@ export default {
 
     return response
       .status(401)
-      .json({ error: 'Não foi encontrada a categoria para deletar!' });
+      .json({ error: "Não foi encontrada a categoria para deletar!" });
   },
 };
