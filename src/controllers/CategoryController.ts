@@ -53,6 +53,10 @@ export default {
         .status(400)
         .json({ error: 'É necessário preencher um Nome e um Slug' });
 
+    if(name.length < 2) {
+      return response.status(400).json({error: 'Nome da Categoria deve ser maior'})
+    }
+
     const categoryCreated = await Category.create({
       name,
       slug,
