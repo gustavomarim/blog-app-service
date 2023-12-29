@@ -62,7 +62,7 @@ export default {
       slug,
     });
 
-    if (categoryCreated) return response.json(categoryCreated);
+    if (categoryCreated) return response.status(200).json({message: 'Categoria criada com sucesso!', categoryCreated});
 
     return response
       .status(401)
