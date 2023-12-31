@@ -1,10 +1,17 @@
 import { NextFunction, Request, Response } from 'express';
-import { UserProps } from '../models/User';
+
+import { Document } from 'mongoose';
+
+declare global {
+  namespace Express {
+    interface User extends Document {
+      isAdmin: boolean;
+    }
+  }
+}
 
 export const isAdmin = (req: Request, res: Response, next: NextFunction) => {
-  const user = req.user as UserProps;
-
-  if (req.isAuthenticated() && user.isAdmin === 1) {
+  if (req.isAuthenticated() && req.user.isAdmin) {
     return next();
   }
 
