@@ -10,11 +10,12 @@ require('./models/User');
 require('./models/Post');
 require('./models/Category');
 
-const admin = require('./routes/admin');
-const user = require('./routes/user');
-const home = require('./routes/home');
-const post = require('./routes/post');
-const category = require('./routes/category');
+const corsOptions = {
+  origin: process.env.FRONT_END_BASE_URL,
+  credentials: true, // Isso permite que o frontend inclua credenciais (cookies) nas solicitações
+};
+
+const ONE_HOUR_IN_MILLISECONDS = 3600000
 
 const app = express();
 app.use(cors());
@@ -28,10 +29,15 @@ configurePassport(passport);
 // Sessão
 app.use(
   session({
-    secret: 'blogapp',
+    secret: "blogapp",
     resave: true,
     saveUninitialized: true,
-  }),
+    cookie: {
+      secure: process.env.NODE_ENV === "production", 
+      httpOnly: true,
+      maxAge: ONE_HOUR_IN_MILLISECONDS, // Tempo de vida do cookie em milissegundos (opcional)
+    },
+  })
 );
 
 // MIDDLEWARES
