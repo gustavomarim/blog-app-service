@@ -1,14 +1,19 @@
-import bodyParser from 'body-parser';
-import cors from 'cors';
-import express, { NextFunction, Request, Response } from 'express';
-import session from 'express-session';
-import passport from 'passport';
-import configurePassport from './config/auth';
+import cors from "cors";
+import express, { Express, NextFunction, Request, Response } from "express";
+import session from "express-session";
+import passport from "passport";
+import configurePassport from "./config/auth";
 
-require('./config/dbConfig');
-require('./models/User');
-require('./models/Post');
-require('./models/Category');
+import "./config/dbConfig";
+import "./models/Category";
+import "./models/Post";
+import "./models/User";
+
+import admin from "./routes/admin";
+import category from "./routes/category";
+import home from "./routes/home";
+import post from "./routes/post";
+import user from "./routes/user";
 
 const corsOptions = {
   origin: process.env.FRONT_END_BASE_URL,
@@ -17,11 +22,10 @@ const corsOptions = {
 
 const ONE_HOUR_IN_MILLISECONDS = 3600000
 
-const app = express();
-app.use(cors());
-
-app.use(bodyParser.urlencoded({ extended: true }));
+const app: Express = express();
+app.use(cors(corsOptions));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // CONFIGURAÇÕES
 configurePassport(passport);
@@ -55,7 +59,7 @@ app.use(admin);
 app.use(post);
 app.use(category);
 
-const PORT = process.env.PORT ?? 3001;
+const PORT: number = Number(process.env.PORT) || 3001;
 
 app.listen(PORT, () => {
   console.log(`Server listening on ${PORT} => http://localhost:${PORT}`);
