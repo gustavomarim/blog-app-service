@@ -43,41 +43,50 @@ export default {
     }
   },
 
-  login(request: Request, response: Response, next: NextFunction) {
-    passport.authenticate("local", (err: any, user: any, info: any) => {
-      if (err) {
-        // Erro interno do servidor
-        return response.status(500).json({
-          message: "Erro interno do servidor",
-          error: err.message,
-        });
-      }
-      if (!user) {
-        // Credenciais inválidas
-        return response.status(401).json({
-          message: "Credenciais inválidas",
-          error: info.message,
-        });
-      }
-      // Login bem-sucedido
-      request.logIn(user, (err) => {
+  login: async (request: Request, response: Response, next: NextFunction) => {
+    try {
+      await passport.authenticate("local", (err: any, user: any, info: any) => {
         if (err) {
+          // Erro interno do servidor
           return response.status(500).json({
             message: "Erro interno do servidor",
             error: err.message,
           });
         }
-        return response.status(200).json({
-          message: "Login bem-sucedido",
-          user: {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            isAdmin: user.isAdmin,
-          },
+        if (!user) {
+          // Credenciais inválidas
+          return response.status(401).json({
+            message: "Credenciais inválidas",
+            error: info.message,
+          });
+        }
+
+        // Login bem-sucedido
+        request.logIn(user, (error: any) => {
+          if (error) {
+            return response.status(500).json({
+              message: "Erro interno do servidor",
+              error: error.message,
+            });
+          }
+
+          return response.status(200).json({
+            message: "Login bem-sucedido",
+            user: {
+              id: user.id,
+              name: user.name,
+              email: user.email,
+              isAdmin: user.isAdmin,
+            },
+          });
         });
+      })(request, response, next);
+    } catch (error: any) {
+      return response.status(500).json({
+        message: "Erro interno do servidor",
+        error: error.message,
       });
-    })(request, response, next);
+    }
   },
 
   logout(request: Request, response: Response, next: NextFunction) {
