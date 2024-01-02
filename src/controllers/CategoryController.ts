@@ -43,6 +43,24 @@ export default {
     });
   },
 
+  async readCategoryById(request: Request, response: Response) {
+    try {
+      const category = await Category.findOne({ _id: request.params.id });
+      if (category) {
+        return response.json(category);
+      } else {
+        return response.status(404).json({
+          error: "Categoria não encontrada",
+        });
+      }
+    } catch (error) {
+      console.error(`Erro ao buscar categoria: ${error}`);
+      return response.status(500).json({
+        error: "Houve um erro interno ao carregar a categoria",
+      });
+    }
+  },
+
   // POST
   async create(request: Request, response: Response) {
     const { name, slug } = request.body;
