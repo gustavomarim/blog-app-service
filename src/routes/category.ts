@@ -5,7 +5,7 @@ const router = Router();
 const categoryController = CategoryController;
 
 // All Categories
-router.get("/categories", categoryController.read);
+router.get("/categories", categoryController.readAllCategories);
 
 // All Categories by Slug
 router.get("/categories/:slug", categoryController.readPostsByCategory);

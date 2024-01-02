@@ -7,7 +7,7 @@ const Post = postsModel;
 
 export default {
   // GET
-  async read(request: Request, response: Response) {
+  async readAllCategories(request: Request, response: Response) {
     const categoryList = await Category.find().sort({ date: "desc" });
 
     return response.json(categoryList);
@@ -62,10 +62,10 @@ export default {
   },
 
   // POST
-  async create(request: Request, response: Response) {
+  async createCategory(request: Request, response: Response) {
     const { name, slug } = request.body;
 
-    // REFORMULAR PARA UMA VALIDAÇÃO DE FORMULÁRIO REUTILIZÁVEL
+    // TODO -  REFORMULAR PARA UMA VALIDAÇÃO DE FORMULÁRIO REUTILIZÁVEL
     if (!name || !slug)
       return response
         .status(400)
@@ -93,7 +93,7 @@ export default {
   },
 
   // PUT
-  async update(request: Request, response: Response) {
+  async updateCategory(request: Request, response: Response) {
     const { id } = request.params;
     const { name, slug } = request.body;
 
@@ -115,7 +115,7 @@ export default {
   },
 
   // DELETE
-  async delete(request: Request, response: Response) {
+  async deleteCategory(request: Request, response: Response) {
     const { id } = request.params;
 
     const categoryDeleted = await Category.findOneAndDelete({ _id: id });
