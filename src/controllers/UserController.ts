@@ -90,10 +90,15 @@ export default {
   },
 
   logout(request: Request, response: Response, next: NextFunction) {
-    request.logout((err: any) => {
-      if (err) return next(err);
+    request.logout(function (error: any) {
+      if (error) {
+        console.error(`Erro durante o logout: ${error}`);
+        return next(new Error("Erro ao realizar logout."));
+      } else {
+        return response.status(200).json({
+          message: "Logout realizado com sucesso!",
+        });
+      }
     });
-
-    return response.status(200).json("Logout realizado com sucesso!");
   },
 };
