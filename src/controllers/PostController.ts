@@ -1,5 +1,5 @@
-import { Request, Response } from 'express';
-import postsModel from '../models/Post';
+import { Request, Response } from "express";
+import postsModel from "../models/Post";
 
 const Post = postsModel;
 
@@ -8,21 +8,25 @@ export default {
   async read(request: Request, response: Response) {
     const postList = await Post.find()
       // Faz a conexão da collection de Postagem com a de Categoria
-      .populate('category')
-      .sort({ date: 'desc' });
+      .populate("category")
+      .sort({ date: "desc" });
 
     if (postList) return response.json(postList);
 
     return response
       .status(400)
-      .json({ error: 'Houve um erro ao listar as postagens' });
+      .json({ error: "Houve um erro ao listar as postagens" });
   },
 
   async readOne(request: Request, response: Response) {
-    const post = await Post.findOne({slug: request.params.slug})
+    const post = await Post.findOne({ slug: request.params.slug });
 
-    if(post) return response.json(post);
+    if (post) return response.json(post);
 
+    return response
+      .status(400)
+      .json({ error: "Houve um erro ao listar a postagem" });
+  },
 
   async getPostById(request: Request, response: Response) {
     try {
@@ -63,7 +67,7 @@ export default {
 
     return response
       .status(401)
-      .json({ error: 'Houve um erro ao salvar a postagem' });
+      .json({ error: "Houve um erro ao salvar a postagem" });
   },
 
   // PUT
@@ -79,14 +83,14 @@ export default {
         description,
         content,
         category,
-      },
+      }
     );
 
     if (postUpdated) return response.json(postUpdated);
 
     return response
       .status(401)
-      .json({ error: 'Não foi encontrado o post para atualizar' });
+      .json({ error: "Não foi encontrado o post para atualizar" });
   },
 
   // DELETE
@@ -99,6 +103,6 @@ export default {
 
     return response
       .status(401)
-      .json({ error: 'Não foi encontrado o post para deletar!' });
+      .json({ error: "Não foi encontrado o post para deletar!" });
   },
 };
