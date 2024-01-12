@@ -23,7 +23,26 @@ export default {
 
     if(post) return response.json(post);
 
-    return response.status(400).json({error: 'Houve um erro ao listar a postagem'});
+
+  async getPostById(request: Request, response: Response) {
+    try {
+      const post = await Post.findById({ _id: request.params.id }).populate(
+        "category"
+      );
+
+      if (post) {
+        return response.json(post);
+      } else {
+        return response
+          .status(404)
+          .json({ error: "Houve um erro ao listar a postagem" });
+      }
+    } catch (error) {
+      console.error(`Erro ao buscar postagem por id: ${error}`);
+      return response.status(500).json({
+        error: "Houve um erro interno ao carregar a postagem.",
+      });
+    }
   },
 
   // POST
