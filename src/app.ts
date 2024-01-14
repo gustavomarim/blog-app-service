@@ -18,7 +18,7 @@ import user from "./routes/user";
 
 const corsOptions = {
   origin: process.env.FRONT_END_BASE_URL,
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials: true, // Isso permite que o frontend inclua credenciais (cookies) nas solicitações
 };
 
@@ -44,6 +44,7 @@ app.use(
       secure: process.env.NODE_ENV === "production",
       httpOnly: true,
       maxAge: ONE_HOUR_IN_MILLISECONDS, // Tempo de vida do cookie em milissegundos (opcional)
+      sameSite: "none",
     },
   })
 );
