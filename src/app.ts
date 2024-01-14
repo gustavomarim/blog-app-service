@@ -1,4 +1,3 @@
-import cors from "cors";
 import express, { Express, NextFunction, Request, Response } from "express";
 import session from "express-session";
 import passport from "passport";
@@ -27,7 +26,7 @@ const app: Express = express();
 
 app.use(corsMiddleware);
 
-app.use(cors(corsOptions));
+// app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
