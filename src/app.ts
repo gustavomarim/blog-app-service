@@ -9,6 +9,7 @@ import "./models/Category";
 import "./models/Post";
 import "./models/User";
 
+import { corsMiddleware } from "./config/corsConfig";
 import admin from "./routes/admin";
 import category from "./routes/category";
 import home from "./routes/home";
@@ -20,9 +21,12 @@ const corsOptions = {
   credentials: true, // Isso permite que o frontend inclua credenciais (cookies) nas solicitações
 };
 
-const ONE_HOUR_IN_MILLISECONDS = 3600000
+const ONE_HOUR_IN_MILLISECONDS = 3600000;
 
 const app: Express = express();
+
+app.use(corsMiddleware);
+
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -37,7 +41,7 @@ app.use(
     resave: true,
     saveUninitialized: true,
     cookie: {
-      secure: process.env.NODE_ENV === "production", 
+      secure: process.env.NODE_ENV === "production",
       httpOnly: true,
       maxAge: ONE_HOUR_IN_MILLISECONDS, // Tempo de vida do cookie em milissegundos (opcional)
     },
