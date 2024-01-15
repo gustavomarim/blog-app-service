@@ -44,7 +44,7 @@ app.use(
       secure: false,
       httpOnly: true,
       maxAge: ONE_HOUR_IN_MILLISECONDS, // Tempo de vida do cookie em milissegundos (opcional)
-      sameSite: "lax"
+      sameSite: "none"
     },
   })
 );
