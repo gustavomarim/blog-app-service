@@ -41,10 +41,11 @@ app.use(
     resave: true,
     saveUninitialized: true,
     cookie: {
+      secure: false,
       secure: process.env.NODE_ENV === "production",
       httpOnly: true,
       maxAge: ONE_HOUR_IN_MILLISECONDS, // Tempo de vida do cookie em milissegundos (opcional)
-      sameSite: "none",
+      sameSite: "none"
     },
   })
 );
