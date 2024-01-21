@@ -41,10 +41,10 @@ app.use(
     resave: true,
     saveUninitialized: true,
     cookie: {
-      secure: true,
+      // secure: true,
       httpOnly: true,
       maxAge: ONE_HOUR_IN_MILLISECONDS, // Tempo de vida do cookie em milissegundos (opcional)
-      sameSite: "none"
+      // sameSite: "none"
     },
   })
 );

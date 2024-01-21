@@ -43,6 +43,8 @@ export default {
     }
   },
 
+
+  // TODO - alterar autenticidade para o a estratégia JWT
   login: async (request: Request, response: Response, next: NextFunction) => {
     try {
       await passport.authenticate("local", (err: any, user: any, info: any) => {
