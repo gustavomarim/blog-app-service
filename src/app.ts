@@ -56,7 +56,7 @@ app.use((request: Request, response: Response, next: NextFunction) => {
 
 app.use(user);
 app.use(admin);
-app.use(postRoutes);
+app.use("/posts", postRoutes);
 app.use(category);
 
 const PORT: number = Number(process.env.PORT) || 3001;
