@@ -1,13 +1,13 @@
 import { Request, Response, Router } from "express";
-import { NewPostController } from "../controllers/NewPostController";
+import { PostController } from "../controllers/PostController";
 
 export class PostRoutes {
   private router: Router;
-  private postController: NewPostController;
+  private postController: PostController;
 
   constructor() {
     this.router = Router();
-    this.postController = new NewPostController();
+            this.postController = new PostController();
     this.initializeRoutes();
   }
 

@@ -7,7 +7,7 @@ import "./config/dbConfig";
 
 import cors from "cors";
 import { corsMiddleware } from "./config/corsConfig";
-import admin from "./routes/admin";
+// import admin from "./routes/admin";
 import category from "./routes/category";
 import postRoutes from "./routes/post";
 import user from "./routes/user";
@@ -55,7 +55,7 @@ app.use((request: Request, response: Response, next: NextFunction) => {
 });
 
 app.use(user);
-app.use(admin);
+// app.use(admin);
 app.use("/posts", postRoutes);
 app.use(category);
 
