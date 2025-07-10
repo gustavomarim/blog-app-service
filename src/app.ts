@@ -12,8 +12,7 @@ import cors from "cors";
 import { corsMiddleware } from "./config/corsConfig";
 import admin from "./routes/admin";
 import category from "./routes/category";
-import home from "./routes/home";
-import post from "./routes/post";
+import postRoutes from "./routes/post";
 import user from "./routes/user";
 
 const corsOptions = {
@@ -58,10 +57,9 @@ app.use((request: Request, response: Response, next: NextFunction) => {
   next();
 });
 
-app.use(home);
 app.use(user);
 app.use(admin);
-app.use(post);
+app.use(postRoutes);
 app.use(category);
 
 const PORT: number = Number(process.env.PORT) || 3001;

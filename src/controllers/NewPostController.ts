@@ -1,0 +1,38 @@
+import { Request, Response } from "express";
+import postsModel from "../models/Post";
+
+export class NewPostController {
+  private postModel: typeof postsModel;
+
+  constructor(postModel: typeof postsModel = postsModel) {
+    this.postModel = postModel;
+  }
+
+  private handleError(error: any, response: Response, message: string) {
+    console.error(`❌ ${message}:`, error);
+    return response.status(500).json({
+      error: `Erro interno do servidor: ${message}`,
+    });
+  }
+
+  public async getAllPosts(request: Request, response: Response) {
+    try {
+      console.log("🔄 Buscando todos os posts...");
+
+      const postList = await this.postModel
+        .find()
+        .populate("category")
+        .sort({ date: "desc" });
+
+      console.log(`📊 Encontrados ${postList.length} posts`);
+
+      return response.json(postList);
+    } catch (error) {
+      return this.handleError(
+        error,
+        response,
+        "Erro ao buscar todas as postagens"
+      );
+    }
+  }
+}
