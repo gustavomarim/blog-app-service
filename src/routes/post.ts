@@ -13,9 +13,10 @@ export class PostRoutes {
 
   private initializeRoutes() {
     this.router.get("/", this.getAllPosts.bind(this));
-    this.router.get("/id/:id", this.getPostById.bind(this));
+    this.router.get("/:id", this.getPostById.bind(this));
     this.router.post("/create", this.createPost.bind(this));
     this.router.put("/update/:id", this.updatePost.bind(this));
+    this.router.delete("/delete/:id", this.deletePost.bind(this));
   }
 
   private async getAllPosts(request: Request, response: Response) {
@@ -47,6 +48,14 @@ export class PostRoutes {
       return await this.postController.updatePost(request, response);
     } catch (error) {
       console.error(error, "Erro ao atualizar postagem");
+    }
+  }
+
+  private async deletePost(request: Request, response: Response) {
+    try {
+      return await this.postController.deletePost(request, response);
+    } catch (error) {
+      console.error(error, "Erro ao deletar postagem");
     }
   }
 

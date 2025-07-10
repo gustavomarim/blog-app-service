@@ -106,4 +106,19 @@ export class NewPostController {
       return this.handleError(error, response, "Erro ao atualizar postagem");
     }
   }
+
+  public async deletePost(request: Request, response: Response) {
+    try {
+      const { id } = request.params;
+
+      const postDeleted = await this.postModel.findOneAndDelete({ _id: id });
+
+      return response.json({
+        message: "Postagem deletada com sucesso",
+        post: postDeleted,
+      });
+    } catch (error) {
+      return this.handleError(error, response, "Erro ao deletar postagem");
+    }
+  }
 }
