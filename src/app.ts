@@ -4,9 +4,6 @@ import passport from "passport";
 import configurePassport from "./config/auth";
 
 import "./config/dbConfig";
-import "./models/Category";
-import "./models/Post";
-import "./models/User";
 
 import cors from "cors";
 import { corsMiddleware } from "./config/corsConfig";
