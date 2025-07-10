@@ -46,12 +46,12 @@ app.use(
       maxAge: ONE_HOUR_IN_MILLISECONDS, // Tempo de vida do cookie em milissegundos (opcional)
       // sameSite: "none"
     },
-  })
+  }) as unknown as express.RequestHandler
 );
 
 // MIDDLEWARES
-app.use(passport.initialize());
-app.use(passport.session());
+app.use(passport.initialize() as unknown as express.RequestHandler);
+app.use(passport.session() as express.RequestHandler);
 
 app.use((request: Request, response: Response, next: NextFunction) => {
   response.locals.user = request.user || null;
