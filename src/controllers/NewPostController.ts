@@ -80,4 +80,30 @@ export class NewPostController {
       return this.handleError(error, response, "Erro ao criar postagem");
     }
   }
+
+  public async updatePost(request: Request, response: Response) {
+    try {
+      const { id } = request.params;
+      const { title, slug, description, content, category } =
+        request.body as PostBody;
+
+      const postUpdated = await this.postModel.findOneAndUpdate(
+        { _id: id },
+        {
+          title,
+          slug,
+          description,
+          content,
+          category,
+        }
+      );
+
+      return response.json({
+        message: "Postagem atualizada com sucesso",
+        post: postUpdated,
+      });
+    } catch (error) {
+      return this.handleError(error, response, "Erro ao atualizar postagem");
+    }
+  }
 }

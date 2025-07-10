@@ -15,6 +15,7 @@ export class PostRoutes {
     this.router.get("/", this.getAllPosts.bind(this));
     this.router.get("/id/:id", this.getPostById.bind(this));
     this.router.post("/create", this.createPost.bind(this));
+    this.router.put("/update/:id", this.updatePost.bind(this));
   }
 
   private async getAllPosts(request: Request, response: Response) {
@@ -38,6 +39,14 @@ export class PostRoutes {
       return await this.postController.createPost(request, response);
     } catch (error) {
       console.error(error, "Erro ao criar postagem");
+    }
+  }
+
+  private async updatePost(request: Request, response: Response) {
+    try {
+      return await this.postController.updatePost(request, response);
+    } catch (error) {
+      console.error(error, "Erro ao atualizar postagem");
     }
   }
 
