@@ -13,7 +13,8 @@ export class PostRoutes {
 
   private initializeRoutes() {
     this.router.get("/", this.getAllPosts.bind(this));
-    this.router.get("/:id", this.getPostById.bind(this));
+    this.router.get("/id/:id", this.getPostById.bind(this));
+    this.router.get("/slug/:slug", this.getPostBySlug.bind(this));
     this.router.post("/create", this.createPost.bind(this));
     this.router.put("/update/:id", this.updatePost.bind(this));
     this.router.delete("/delete/:id", this.deletePost.bind(this));
@@ -24,6 +25,14 @@ export class PostRoutes {
       return await this.postController.getAllPosts(request, response);
     } catch (error) {
       console.error(error, "Erro ao buscar todas as postagens");
+    }
+  }
+
+  private async getPostBySlug(request: Request, response: Response) {
+    try {
+      return await this.postController.getPostBySlug(request, response);
+    } catch (error) {
+      console.error(error, "Erro ao buscar postagem por slug");
     }
   }
 

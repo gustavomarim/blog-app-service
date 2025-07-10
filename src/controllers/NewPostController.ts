@@ -44,6 +44,19 @@ export class NewPostController {
     }
   }
 
+  public async getPostBySlug(request: Request, response: Response) {
+    try {
+      const post = await this.postModel.findOne({ slug: request.params.slug });
+      return response.json(post);
+    } catch (error) {
+      return this.handleError(
+        error,
+        response,
+        "Erro ao buscar postagem por slug"
+      );
+    }
+  }
+
   public async getPostById(request: Request, response: Response) {
     try {
       const post = await this.postModel
