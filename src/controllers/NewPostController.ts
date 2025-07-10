@@ -35,4 +35,20 @@ export class NewPostController {
       );
     }
   }
+
+  public async getPostById(request: Request, response: Response) {
+    try {
+      const post = await this.postModel
+        .findById(request.params.id)
+        .populate("category");
+
+      return response.json(post);
+    } catch (error) {
+      return this.handleError(
+        error,
+        response,
+        "Erro ao buscar postagem por id"
+      );
+    }
+  }
 }
