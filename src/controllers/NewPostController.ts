@@ -1,6 +1,14 @@
 import { Request, Response } from "express";
 import postsModel from "../models/Post";
 
+type PostBody = {
+  title: string;
+  slug: string;
+  description: string;
+  content: string;
+  category: string;
+};
+
 export class NewPostController {
   private postModel: typeof postsModel;
 
@@ -49,6 +57,27 @@ export class NewPostController {
         response,
         "Erro ao buscar postagem por id"
       );
+    }
+  }
+
+  public async createPost(request: Request, response: Response) {
+    try {
+      const { title, slug, description, content, category } = request.body;
+
+      const postCreated = await this.postModel.create({
+        title,
+        slug,
+        description,
+        content,
+        category,
+      });
+
+      return response.json({
+        message: "Postagem criada com sucesso",
+        post: postCreated,
+      });
+    } catch (error) {
+      return this.handleError(error, response, "Erro ao criar postagem");
     }
   }
 }

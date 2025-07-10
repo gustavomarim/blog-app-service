@@ -14,6 +14,7 @@ export class PostRoutes {
   private initializeRoutes() {
     this.router.get("/", this.getAllPosts.bind(this));
     this.router.get("/id/:id", this.getPostById.bind(this));
+    this.router.post("/create", this.createPost.bind(this));
   }
 
   private async getAllPosts(request: Request, response: Response) {
@@ -29,6 +30,14 @@ export class PostRoutes {
       return await this.postController.getPostById(request, response);
     } catch (error) {
       console.error(error, "Erro ao buscar postagem por id");
+    }
+  }
+
+  private async createPost(request: Request, response: Response) {
+    try {
+      return await this.postController.createPost(request, response);
+    } catch (error) {
+      console.error(error, "Erro ao criar postagem");
     }
   }
 
