@@ -2,7 +2,6 @@ import * as dotenv from "dotenv";
 import { connect, ConnectOptions, set } from "mongoose";
 dotenv.config();
 
-// CONEXÃO COM O BANCO DE DADOS MONGODB ATLAS
 set("strictQuery", true);
 const connection = connect(
   process.env.MONGODB_URI as string,

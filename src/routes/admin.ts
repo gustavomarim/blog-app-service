@@ -4,6 +4,11 @@
 // import PostController from "../controllers/PostController";
 // import { isAdmin } from "../helpers/isAdmin";
 
+import { Router } from "express";
+import { CategoryController } from "../controllers/CategoryController";
+import { PostController } from "../controllers/PostController";
+import { isAdmin } from "../helpers/isAdmin";
+
 // const router = Router();
 // const categoryController = CategoryController;
 // const postController = PostController;
@@ -31,3 +36,32 @@
 // router.delete("/admin/posts/:id", isAdmin, postController.delete);
 
 // export default router;
+
+export class AdminRoutes {
+  private router: Router;
+  private categoryController: CategoryController;
+  private postController: PostController;
+
+  constructor() {
+    this.router = Router();
+    this.categoryController = new CategoryController();
+    this.postController = new PostController();
+    this.initializeRoutes();
+  }
+
+  private initializeRoutes() {
+    this.router.get(
+      "/categories",
+      isAdmin,
+      this.categoryController.getAllCategories.bind(this)
+    );
+  }
+
+  public getRouter() {
+    return this.router;
+  }
+}
+
+const adminRoutes = new AdminRoutes();
+
+export default adminRoutes.getRouter();

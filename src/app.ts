@@ -7,7 +7,7 @@ import "./config/dbConfig";
 
 import cors from "cors";
 import { corsMiddleware } from "./config/corsConfig";
-// import admin from "./routes/admin";
+import adminRoutes from "./routes/admin";
 import categoryRoutes from "./routes/category";
 import postRoutes from "./routes/post";
 import userRoutes from "./routes/user";
@@ -15,7 +15,8 @@ import userRoutes from "./routes/user";
 const corsOptions = {
   origin: process.env.FRONT_END_BASE_URL,
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-  credentials: true, // Isso permite que o frontend inclua credenciais (cookies) nas solicitações
+  credentials: true, // Isso permite que o frontend inclua credenciais
+  // (cookies) nas solicitações
 };
 
 const ONE_HOUR_IN_MILLISECONDS = 3600000;
@@ -55,7 +56,7 @@ app.use((request: Request, response: Response, next: NextFunction) => {
 });
 
 app.use("/users", userRoutes);
-// app.use(admin);
+app.use("/admin", adminRoutes);
 app.use("/posts", postRoutes);
 app.use("/categories", categoryRoutes);
 
