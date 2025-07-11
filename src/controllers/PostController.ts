@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import categoriesModel from "../models/Category";
 import postsModel from "../models/Post";
 
 type PostBody = {
@@ -11,9 +12,14 @@ type PostBody = {
 
 export class PostController {
   private postModel: typeof postsModel;
+  private categoryModel: typeof categoriesModel;
 
-  constructor(postModel: typeof postsModel = postsModel) {
+  constructor(
+    postModel: typeof postsModel = postsModel,
+    categoryModel: typeof categoriesModel = categoriesModel
+  ) {
     this.postModel = postModel;
+    this.categoryModel = categoryModel;
   }
 
   private handleError(error: any, response: Response, message: string) {
@@ -132,6 +138,28 @@ export class PostController {
       });
     } catch (error) {
       return this.handleError(error, response, "Erro ao deletar postagem");
+    }
+  }
+
+  public async getPostsByCategory(request: Request, response: Response) {
+    try {
+      const { slug } = request.params;
+
+      const postByCategory = await this.categoryModel
+        .findOne({ slug })
+        .then((category) => {
+          if (category) {
+            return this.postModel.find({ category: category._id });
+          }
+        });
+
+      return response.json(postByCategory);
+    } catch (error) {
+      return this.handleError(
+        error,
+        response,
+        "Erro ao buscar posts por categoria"
+      );
     }
   }
 }

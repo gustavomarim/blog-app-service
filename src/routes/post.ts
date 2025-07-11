@@ -7,7 +7,7 @@ export class PostRoutes {
 
   constructor() {
     this.router = Router();
-            this.postController = new PostController();
+    this.postController = new PostController();
     this.initializeRoutes();
   }
 
@@ -15,6 +15,7 @@ export class PostRoutes {
     this.router.get("/", this.getAllPosts.bind(this));
     this.router.get("/id/:id", this.getPostById.bind(this));
     this.router.get("/slug/:slug", this.getPostBySlug.bind(this));
+    this.router.get("/category/:slug", this.getPostsByCategory.bind(this));
     this.router.post("/create", this.createPost.bind(this));
     this.router.put("/update/:id", this.updatePost.bind(this));
     this.router.delete("/delete/:id", this.deletePost.bind(this));
@@ -65,6 +66,14 @@ export class PostRoutes {
       return await this.postController.deletePost(request, response);
     } catch (error) {
       console.error(error, "Erro ao deletar postagem");
+    }
+  }
+
+  private async getPostsByCategory(request: Request, response: Response) {
+    try {
+      return await this.postController.getPostsByCategory(request, response);
+    } catch (error) {
+      console.error(error, "Erro ao buscar posts por categoria");
     }
   }
 
