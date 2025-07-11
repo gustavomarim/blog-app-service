@@ -1,10 +1,10 @@
-import { Router } from "express";
-import PostController from "../controllers/PostController";
-const router = Router();
+// import { Router } from "express";
+// // import PostController from "../controllers/PostController";
+// const router = Router();
 
-const postController = PostController;
+// const postController = PostController;
 
-// All Posts
-router.get("/", postController.read);
+// // All Posts
+// router.get("/", postController.read);
 
-export default router;
+// export default router;

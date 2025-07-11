@@ -8,7 +8,7 @@ import "./config/dbConfig";
 import cors from "cors";
 import { corsMiddleware } from "./config/corsConfig";
 // import admin from "./routes/admin";
-import category from "./routes/category";
+import categoryRoutes from "./routes/category";
 import postRoutes from "./routes/post";
 import user from "./routes/user";
 
@@ -57,7 +57,7 @@ app.use((request: Request, response: Response, next: NextFunction) => {
 app.use(user);
 // app.use(admin);
 app.use("/posts", postRoutes);
-app.use(category);
+app.use("/categories", categoryRoutes);
 
 const PORT: number = Number(process.env.PORT) || 3001;
 

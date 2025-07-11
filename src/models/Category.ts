@@ -1,4 +1,4 @@
-import { model, Schema } from 'mongoose';
+import { model, Schema } from "mongoose";
 
 export interface CategoryProps {
   name: string;
@@ -21,6 +21,6 @@ const Category = new Schema<CategoryProps>({
   },
 });
 
-const categoriesModel = model<CategoryProps>('categories', Category);
+const categoriesModel = model<CategoryProps>("categories", Category);
 
 export default categoriesModel;
