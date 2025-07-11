@@ -1,4 +1,4 @@
-import { model, Schema } from 'mongoose';
+import { model, Schema } from "mongoose";
 
 export interface UserProps {
   id: string;
@@ -27,6 +27,6 @@ const User = new Schema<UserProps>({
   },
 });
 
-const usersModel = model<UserProps>('users', User);
+const usersModel = model<UserProps>("users", User);
 
 export default usersModel;

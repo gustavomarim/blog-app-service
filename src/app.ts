@@ -10,7 +10,7 @@ import { corsMiddleware } from "./config/corsConfig";
 // import admin from "./routes/admin";
 import categoryRoutes from "./routes/category";
 import postRoutes from "./routes/post";
-import user from "./routes/user";
+import userRoutes from "./routes/user";
 
 const corsOptions = {
   origin: process.env.FRONT_END_BASE_URL,
@@ -54,7 +54,7 @@ app.use((request: Request, response: Response, next: NextFunction) => {
   next();
 });
 
-app.use(user);
+app.use("/users", userRoutes);
 // app.use(admin);
 app.use("/posts", postRoutes);
 app.use("/categories", categoryRoutes);
