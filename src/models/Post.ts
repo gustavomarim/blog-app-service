@@ -1,4 +1,4 @@
-import { model, Schema } from 'mongoose';
+import { model, Schema } from "mongoose";
 
 export interface PostProps {
   title: string;
@@ -26,10 +26,9 @@ const Post = new Schema<PostProps>({
     type: String,
     required: true,
   },
-  // relaciona com a collection Categoria
   category: {
     type: Schema.Types.ObjectId,
-    ref: 'categories',
+    ref: "categories", // relaciona com a collection Categoria
     required: true,
   },
   date: {
@@ -38,6 +37,6 @@ const Post = new Schema<PostProps>({
   },
 });
 
-const postsModel = model<PostProps>('posts', Post);
+const postsModel = model<PostProps>("posts", Post);
 
 export default postsModel;

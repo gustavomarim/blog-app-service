@@ -1,129 +1,111 @@
 import { Request, Response } from "express";
 import categoriesModel from "../models/Category";
-import postsModel from "../models/Post";
 
-const Category = categoriesModel;
-const Post = postsModel;
+export class CategoryController {
+  private categoryModel: typeof categoriesModel;
 
-export default {
-  // GET
-  async readAllCategories(request: Request, response: Response) {
-    const categoryList = await Category.find().sort({ date: "desc" });
+  constructor(categoryModel: typeof categoriesModel = categoriesModel) {
+    this.categoryModel = categoryModel;
+  }
 
-    return response.json(categoryList);
-  },
-
-  // GET
-  async readPostsByCategory(request: Request, response: Response) {
-    const categoryList = await Category.findOne({
-      slug: request.params.slug,
-    })
-      .then((category) => {
-        if (category) {
-          return Post.find({ category: category._id });
-        }
-      })
-      .catch((err: Error) => response.json(err));
-
-    if (categoryList) return response.json(categoryList);
-
-    return response.status(400).json({
-      error: "Houve um erro interno ao carregar a lista de categorias",
+  private handleError(error: any, response: Response, message: string) {
+    console.error(`❌ ${message}:`, error);
+    return response.status(500).json({
+      error: `Erro interno do servidor: ${message}`,
     });
-  },
+  }
 
-  // GET
-  async readCategoryBySlug(request: Request, response: Response) {
-    const category = await Category.findOne({ slug: request.params.slug });
-
-    if (category) return response.json(category);
-
-    return response.status(400).json({
-      error: "Houve um erro interno ao carregar a categoria",
-    });
-  },
-
-  async readCategoryById(request: Request, response: Response) {
+  public async getAllCategories(request: Request, response: Response) {
     try {
-      const category = await Category.findOne({ _id: request.params.id });
-      if (category) {
-        return response.json(category);
-      } else {
-        return response.status(404).json({
-          error: "Categoria não encontrada",
-        });
-      }
+      console.log("🔄 Buscando todas as categorias...");
+
+      const categoryList = await this.categoryModel
+        .find()
+        .sort({ date: "desc" });
+
+      return response.json(categoryList);
     } catch (error) {
-      console.error(`Erro ao buscar categoria: ${error}`);
-      return response.status(500).json({
-        error: "Houve um erro interno ao carregar a categoria",
-      });
+      return this.handleError(
+        error,
+        response,
+        "Erro ao buscar todas as categorias"
+      );
     }
-  },
+  }
 
-  // POST
-  async createCategory(request: Request, response: Response) {
-    const { name, slug } = request.body;
+  public async getCategoryBySlug(request: Request, response: Response) {
+    try {
+      const { slug } = request.params;
+      const category = await this.categoryModel.findOne({ slug });
 
-    // TODO -  REFORMULAR PARA UMA VALIDAÇÃO DE FORMULÁRIO REUTILIZÁVEL
-    if (!name || !slug)
-      return response
-        .status(400)
-        .json({ error: "É necessário preencher um Nome e um Slug" });
-
-    if (name.length < 2) {
-      return response
-        .status(400)
-        .json({ error: "Nome da Categoria deve ser maior" });
+      return response.json(category);
+    } catch (error) {
+      return this.handleError(
+        error,
+        response,
+        "Erro ao buscar categoria por slug"
+      );
     }
+  }
 
-    const categoryCreated = await Category.create({
-      name,
-      slug,
-    });
+  public async getCategoryById(request: Request, response: Response) {
+    try {
+      const { id } = request.params;
+      const category = await this.categoryModel.findById(id);
 
-    if (categoryCreated)
-      return response
-        .status(200)
-        .json({ message: "Categoria criada com sucesso!", categoryCreated });
+      return response.json(category);
+    } catch (error) {
+      return this.handleError(
+        error,
+        response,
+        "Erro ao buscar categoria por id"
+      );
+    }
+  }
 
-    return response
-      .status(401)
-      .json({ error: " Houve um erro ao salvar a categoria!" });
-  },
+  public async createCategory(request: Request, response: Response) {
+    try {
+      const { name, slug } = request.body;
 
-  // PUT
-  async updateCategory(request: Request, response: Response) {
-    const { id } = request.params;
-    const { name, slug } = request.body;
+      const category = await this.categoryModel.create({ name, slug });
 
-    // ADICIONAR VALIDAÇÃO DE FORMULÁRIO
+      return response.json(category);
+    } catch (error) {
+      return this.handleError(error, response, "Erro ao criar categoria");
+    }
+  }
 
-    const categoryUpdated = await Category.findOneAndUpdate(
-      { _id: id },
-      {
+  public async updateCategory(request: Request, response: Response) {
+    try {
+      const { id } = request.params;
+      const { name, slug } = request.body;
+
+      const category = await this.categoryModel.findByIdAndUpdate(id, {
         name,
         slug,
-      }
-    );
+      });
 
-    if (categoryUpdated) return response.json(categoryUpdated);
+      return response.json({
+        message: "Categoria atualizada com sucesso!",
+        category,
+      });
+    } catch (error) {
+      return this.handleError(error, response, "Erro ao atualizar categoria");
+    }
+  }
 
-    return response
-      .status(401)
-      .json({ error: "Não foi encontrada a categoria para atualizar!" });
-  },
+  public async deleteCategory(request: Request, response: Response) {
+    try {
+      const { id } = request.params;
 
-  // DELETE
-  async deleteCategory(request: Request, response: Response) {
-    const { id } = request.params;
+      const category = await this.categoryModel.findByIdAndDelete(id);
 
-    const categoryDeleted = await Category.findOneAndDelete({ _id: id });
-
-    if (categoryDeleted) return response.json(categoryDeleted);
-
-    return response
-      .status(401)
-      .json({ error: "Não foi encontrada a categoria para deletar!" });
-  },
-};
+      return response.json({
+        message: "Categoria deletada com sucesso!",
+        category,
+      });
+    } catch (error) {
+      return this.handleError(error, response, "Erro ao deletar categoria");
+    }
+  }
+}

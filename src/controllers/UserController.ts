@@ -1,106 +1,109 @@
 import * as bcrypt from "bcryptjs";
 import { NextFunction, Request, Response } from "express";
 import passport from "passport";
-import User from "../models/User";
+import usersModel from "../models/User";
 
-export default {
-  async register(request: Request, response: Response) {
+export class UserController {
+  private userModel: typeof usersModel;
+
+  constructor(userModel: typeof usersModel = usersModel) {
+    this.userModel = userModel;
+  }
+
+  public async createUser(request: Request, response: Response) {
     const { name, email, password, confirmPassword } = request.body;
 
-    const userEmail = await User.findOne({ email });
-
     if (password !== confirmPassword) {
-      return response.status(400).json({ error: "As senhas devem ser iguais" });
+      return response.status(400).json({
+        error: "As senhas devem ser iguais",
+      });
     }
+
+    const userEmail = await this.userModel.findOne({ email });
 
     if (userEmail) {
-      return response
-        .status(400)
-        .json("Já existe uma conta com este e-mail no nosso sistema");
-    } else {
-      const newUser = await User.create({
-        name,
-        email,
-        password,
+      return response.status(400).json({
+        error: "Já existe uma conta com este e-mail no nosso sistema",
       });
-
-      // 'Hasheando' a senha
-      bcrypt.genSalt(10, (_error: any, salt: any) => {
-        bcrypt.hash(newUser.password, salt, (err: any, hash: any) => {
-          if (err) {
-            return response.json({
-              error: "Houve um erro durante o salvamento do usuário",
-            });
-          } else {
-            newUser.password = hash;
-
-            newUser.save();
-          }
-        });
-      });
-
-      if (newUser) return response.json(newUser);
     }
-  },
 
+    const newUser = await this.userModel.create({
+      name,
+      email,
+      password,
+    });
 
-  // TODO - alterar autenticidade para o a estratégia JWT
-  login: async (request: Request, response: Response, next: NextFunction) => {
-    try {
-      await passport.authenticate("local", (err: any, user: any, info: any) => {
+    bcrypt.genSalt(10, (error: unknown, salt: string) => {
+      bcrypt.hash(newUser.password, salt, (err: unknown, hash: string) => {
         if (err) {
-          // Erro interno do servidor
-          return response.status(500).json({
-            message: "Erro interno do servidor",
-            error: err.message,
-          });
-        }
-        if (!user) {
-          // Credenciais inválidas
-          return response.status(401).json({
-            message: "Credenciais inválidas",
-            error: info.message,
+          return response.json({
+            error: "Houve um erro durante o salvamento do usuário",
           });
         }
 
-        // Login bem-sucedido
-        request.logIn(user, (error: any) => {
-          if (error) {
+        newUser.password = hash;
+
+        newUser.save();
+      });
+    });
+
+    if (newUser) return response.json(newUser);
+  }
+
+  public async login(request: Request, response: Response, next: NextFunction) {
+    try {
+      await passport.authenticate(
+        "local",
+        (err: unknown, user: any, info: any) => {
+          if (err) {
             return response.status(500).json({
               message: "Erro interno do servidor",
-              error: error.message,
+              error: err,
             });
           }
 
-          return response.status(200).json({
-            message: "Login bem-sucedido",
-            user: {
-              id: user.id,
-              name: user.name,
-              email: user.email,
-              isAdmin: user.isAdmin,
-            },
+          if (!user) {
+            return response.status(401).json({
+              message: "Credenciais inválidas",
+            });
+          }
+
+          request.login(user, (error: unknown) => {
+            if (error) {
+              return response.status(500).json({
+                message: "Erro interno do servidor",
+                error: error,
+              });
+            }
+
+            return response.status(200).json({
+              message: "Login bem-sucedido",
+              user: {
+                id: user.id,
+              },
+            });
           });
-        });
-      })(request, response, next);
-    } catch (error: any) {
+        }
+      )(request, response, next);
+    } catch (error) {
       return response.status(500).json({
         message: "Erro interno do servidor",
-        error: error.message,
+        error: error,
       });
     }
-  },
+  }
 
-  logout(request: Request, response: Response, next: NextFunction) {
-    request.logout(function (error: any) {
-      if (error) {
-        console.error(`Erro durante o logout: ${error}`);
-        return next(new Error("Erro ao realizar logout."));
-      } else {
-        return response.status(200).json({
-          message: "Logout realizado com sucesso!",
-        });
-      }
+  public async logout(
+    request: Request,
+    response: Response,
+    next: NextFunction
+  ) {
+    request.logout(function (error: unknown) {
+      if (error) return next(new Error("Erro ao realizar logout."));
+
+      return response.status(200).json({
+        message: "Logout realizado com sucesso!",
+      });
     });
-  },
-};
+  }
+}
