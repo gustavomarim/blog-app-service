@@ -28,11 +28,11 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// CONFIGURAÇÕES
+// CONFIGURATIONS
 const authService = new AuthService(passport);
 authService.configure();
 
-// Sessão
+// SESSIONS
 app.use(
   session({
     secret: "blogapp",
