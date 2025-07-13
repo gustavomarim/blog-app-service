@@ -1,3 +1,4 @@
+import cookieParser from "cookie-parser";
 import express, { Express, NextFunction, Request, Response } from "express";
 import session from "express-session";
 import passport from "passport";
@@ -11,6 +12,7 @@ import categoryRoutes from "./routes/category";
 import postRoutes from "./routes/post";
 import userRoutes from "./routes/user";
 import AuthService from "./services/AuthService";
+import JwtAuthService from "./services/JwtAuthService";
 
 const corsOptions = {
   origin: process.env.FRONT_END_BASE_URL,
@@ -25,12 +27,16 @@ const app: Express = express();
 
 app.use(corsMiddleware);
 app.use(cors(corsOptions));
+app.use(cookieParser()); // Adicionar cookie-parser antes do express.json()
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // CONFIGURATIONS
 const authService = new AuthService(passport);
 authService.configure();
+
+const jwtAuthService = new JwtAuthService(passport);
+jwtAuthService.configure();
 
 // SESSIONS
 app.use(
