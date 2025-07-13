@@ -2,6 +2,7 @@ import * as bcrypt from "bcryptjs";
 import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import passport from "passport";
+import { COOKIE_MAX_AGE } from "../app";
 import usersModel from "../models/User";
 
 export class UserController {
@@ -77,17 +78,17 @@ export class UserController {
             isAdmin: user.isAdmin,
           };
 
-          const token = jwt.sign(payload, process.env.JWT_SECRET || "secret", {
+          const token = jwt.sign(payload, process.env.JWT_SECRET as string, {
             expiresIn: "1h",
-            issuer: process.env.JWT_ISSUER || "blog-app",
-            audience: process.env.JWT_AUDIENCE || "blog-app-users",
+            issuer: process.env.JWT_ISSUER,
+            audience: process.env.JWT_AUDIENCE,
           });
 
           // Definir cookie com o JWT (opcional)
           response.cookie("jwt", token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
-            maxAge: 3600000, // 1 hora
+            maxAge: COOKIE_MAX_AGE, // 1 hora
           });
 
           return response.status(200).json({
