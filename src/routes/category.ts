@@ -1,4 +1,5 @@
 import { Request, Response, Router } from "express";
+import passport from "passport";
 import { CategoryController } from "../controllers/CategoryController";
 
 export class CategoryRoutes {
@@ -12,12 +13,42 @@ export class CategoryRoutes {
   }
 
   private initializeRoutes() {
+    // Rotas públicas (leitura)
     this.router.get("/", this.getAllCategories.bind(this));
     this.router.get("/slug/:slug", this.getCategoryBySlug.bind(this));
-    this.router.get("/id/:id", this.getCategoryById.bind(this));
-    this.router.post("/create", this.createCategory.bind(this));
-    this.router.put("/update/:id", this.updateCategory.bind(this));
-    this.router.delete("/delete/:id", this.deleteCategory.bind(this));
+    
+    // Rotas protegidas (escrita) - Apenas admins
+    this.router.post(
+      "/create",
+      passport.authenticate("jwt", { session: false }),
+      this.verifyAdmin.bind(this),
+      this.createCategory.bind(this)
+    );
+    this.router.put(
+      "/update/:id",
+      passport.authenticate("jwt", { session: false }),
+      this.verifyAdmin.bind(this),
+      this.updateCategory.bind(this)
+    );
+    this.router.delete(
+      "/delete/:id",
+      passport.authenticate("jwt", { session: false }),
+      this.verifyAdmin.bind(this),
+      this.deleteCategory.bind(this)
+    );
+  }
+
+  // Middleware para verificar se o usuário é admin
+  private verifyAdmin(request: Request, response: Response, next: any) {
+    const user = request.user as any;
+
+    if (!user || !user.isAdmin) {
+      return response.status(403).json({
+        error: "Acesso negado: você precisa ser um administrador para gerenciar categorias",
+      });
+    }
+
+    next();
   }
 
   private async getAllCategories(request: Request, response: Response) {
@@ -33,14 +64,6 @@ export class CategoryRoutes {
       return await this.categoryController.getCategoryBySlug(request, response);
     } catch (error) {
       console.error(error, "Erro ao buscar categoria por slug");
-    }
-  }
-
-  private async getCategoryById(request: Request, response: Response) {
-    try {
-      return await this.categoryController.getCategoryById(request, response);
-    } catch (error) {
-      console.error(error, "Erro ao buscar categoria por id");
     }
   }
 
