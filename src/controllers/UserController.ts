@@ -227,13 +227,81 @@ export class UserController {
     response: Response,
     next: NextFunction
   ) {
-    request.logout(function (error: unknown) {
-      if (error) return next(new Error("Erro ao realizar logout."));
+    try {
+      // Obter informações do usuário antes do logout (para logs)
+      const user = request.user as any;
+      const userInfo = user
+        ? {
+            id: user._id || user.id,
+            email: user.email,
+            isAdmin: user.isAdmin,
+          }
+        : null;
 
-      return response.status(200).json({
-        message: "Logout realizado com sucesso!",
+      // Logout da sessão Passport
+      request.logout(function (error: unknown) {
+        if (error) {
+          console.error("Erro no logout de sessão:", error);
+          return response.status(500).json({
+            message: "Erro interno durante logout",
+            error: "Falha ao invalidar sessão",
+          });
+        }
+
+        // Limpeza segura de TODOS os cookies de autenticação
+        const cookieOptions = {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          path: "/",
+          domain:
+            process.env.NODE_ENV === "production"
+              ? process.env.COOKIE_DOMAIN
+              : undefined,
+          sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        } as const;
+
+        // Limpar cookie JWT
+        response.clearCookie("jwt", cookieOptions);
+
+        // Limpar cookie de sessão
+        response.clearCookie("connect.sid", cookieOptions);
+
+        // Limpar possíveis outros cookies relacionados
+        response.clearCookie("session", cookieOptions);
+        response.clearCookie("auth", cookieOptions);
+
+        // Log de segurança
+        if (process.env.NODE_ENV !== "production") {
+          console.log(`[LOGOUT] ${new Date().toISOString()} - Usuário:`, {
+            id: userInfo?.id || "Anônimo",
+            email: userInfo?.email || "Não identificado",
+            ip: request.ip || request.socket.remoteAddress,
+            userAgent: request.headers["user-agent"]?.substring(0, 100),
+          });
+        }
+
+        // Invalidar sessão se existir
+        if (request.session) {
+          request.session.destroy((err) => {
+            if (err) {
+              console.error("Erro ao destruir sessão:", err);
+            }
+          });
+        }
+
+        return response.status(200).json({
+          message: "Logout realizado com sucesso!",
+          timestamp: new Date().toISOString(),
+          success: true,
+        });
       });
-    });
+    } catch (error) {
+      console.error("Erro crítico no logout:", error);
+      return response.status(500).json({
+        message: "Erro interno do servidor durante logout",
+        error: "Falha crítica no processo de logout",
+      });
+    }
   }
 
   public async validateJwt(

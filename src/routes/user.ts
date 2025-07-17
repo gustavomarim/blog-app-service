@@ -24,6 +24,9 @@ export class UserRoutes {
       passport.authenticate("jwt", { session: false }),
       this.getProfile.bind(this)
     );
+
+    // Rota para verificar status de autenticação (útil pós-logout)
+    this.router.get("/auth-status", this.checkAuthStatus.bind(this));
   }
 
   private async createUser(request: Request, response: Response) {
@@ -97,6 +100,77 @@ export class UserRoutes {
       return await this.userController.logout(request, response, next);
     } catch (error) {
       console.error(error, "Erro ao fazer logout");
+    }
+  }
+
+  // Verifica status de autenticação sem falhar (útil para verificar pós-logout)
+  private async checkAuthStatus(request: Request, response: Response) {
+    try {
+      // Tentar autenticar sem forçar erro
+      passport.authenticate(
+        "jwt",
+        { session: false },
+        (err: unknown, user: any, info: any) => {
+          const hasJwtCookie = !!request.cookies?.jwt;
+          const hasSessionCookie = !!request.cookies?.["connect.sid"];
+          const hasAuthHeader = !!request.headers.authorization;
+
+          if (err) {
+            return response.status(200).json({
+              authenticated: false,
+              reason: "authentication_error",
+              cookies: {
+                jwt: hasJwtCookie,
+                session: hasSessionCookie,
+              },
+              headers: {
+                authorization: hasAuthHeader,
+              },
+              message: "Erro na autenticação",
+            });
+          }
+
+          if (!user) {
+            return response.status(200).json({
+              authenticated: false,
+              reason: info?.message || "token_invalid_or_expired",
+              cookies: {
+                jwt: hasJwtCookie,
+                session: hasSessionCookie,
+              },
+              headers: {
+                authorization: hasAuthHeader,
+              },
+              message: "Usuário não autenticado - logout bem-sucedido",
+            });
+          }
+
+          // Usuário ainda autenticado
+          return response.status(200).json({
+            authenticated: true,
+            user: {
+              id: user._id,
+              email: user.email,
+              isAdmin: user.isAdmin,
+            },
+            cookies: {
+              jwt: hasJwtCookie,
+              session: hasSessionCookie,
+            },
+            headers: {
+              authorization: hasAuthHeader,
+            },
+            message: "Usuário ainda autenticado",
+          });
+        }
+      )(request, response);
+    } catch (error) {
+      console.error("Erro ao verificar status de auth:", error);
+      return response.status(500).json({
+        authenticated: false,
+        reason: "internal_error",
+        message: "Erro interno ao verificar autenticação",
+      });
     }
   }
 

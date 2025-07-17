@@ -86,7 +86,7 @@ app.use(
 app.use(passport.initialize() as unknown as express.RequestHandler);
 app.use(passport.session() as express.RequestHandler);
 
-// Middleware de debug para cookies e headers
+// Middleware de debug e segurança para cookies e headers
 app.use((request: Request, response: Response, next: NextFunction) => {
   if (process.env.NODE_ENV !== "production") {
     console.log(
@@ -99,6 +99,11 @@ app.use((request: Request, response: Response, next: NextFunction) => {
     });
     console.log("Cookies:", request.cookies);
   }
+
+  // Adicionar headers de segurança para logout
+  response.header("Cache-Control", "no-cache, no-store, must-revalidate");
+  response.header("Pragma", "no-cache");
+  response.header("Expires", "0");
 
   response.locals.user = request.user || null;
   next();
