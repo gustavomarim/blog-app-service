@@ -21,8 +21,6 @@ export class UserRoutes {
     // Novas rotas JWT
     this.router.post("/jwt-login", this.generateJwtToken.bind(this));
     this.router.get("/jwt-verify", this.jwtLogin.bind(this));
-
-    // Rota protegida usando JWT (seguindo a documentação)
     this.router.get(
       "/profile",
       passport.authenticate("jwt", { session: false }),
@@ -34,6 +32,13 @@ export class UserRoutes {
       "/admin-profile",
       passport.authenticate("jwt", { session: false }),
       this.getAdminProfile.bind(this)
+    );
+
+    // Rota de teste para verificar se JWT está funcionando
+    this.router.get(
+      "/test-auth",
+      passport.authenticate("jwt", { session: false }),
+      this.testAuth.bind(this)
     );
   }
 
@@ -136,6 +141,37 @@ export class UserRoutes {
       return await this.userController.logout(request, response, next);
     } catch (error) {
       console.error(error, "Erro ao fazer logout");
+    }
+  }
+
+  private async validateJwt(request: Request, response: Response, next: NextFunction) {
+    try {
+      return await this.userController.validateJwt(request, response, next);
+    } catch (error) {
+      console.error(error, "Erro ao validar JWT");
+    }
+  }
+
+  private async testAuth(request: Request, response: Response) {
+    try {
+      const user = request.user as any;
+      
+      return response.status(200).json({
+        message: "🎉 Autenticação JWT funcionando perfeitamente!",
+        timestamp: new Date().toISOString(),
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          isAdmin: user.isAdmin,
+        },
+        authMethod: "JWT Cookie"
+      });
+    } catch (error) {
+      console.error(error, "Erro no teste de autenticação");
+      return response.status(500).json({
+        error: "Erro interno do servidor",
+      });
     }
   }
 
