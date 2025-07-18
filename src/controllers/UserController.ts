@@ -84,17 +84,26 @@ export class UserController {
             audience: process.env.JWT_AUDIENCE,
           });
 
+          // Detectar se está em produção baseado na URL do frontend
+          const isProduction =
+            process.env.FRONT_END_BASE_URL?.includes("vercel.app") ||
+            process.env.FRONT_END_BASE_URL?.includes("render.com") ||
+            process.env.NODE_ENV === "production";
+
+          console.log("🍪 Configurando cookie JWT:", {
+            isProduction,
+            frontendUrl: process.env.FRONT_END_BASE_URL,
+            nodeEnv: process.env.NODE_ENV,
+          });
+
           // Definir cookie com o JWT (opcional)
           response.cookie("jwt", token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production" ? true : false,
+            secure: isProduction, // HTTPS obrigatório em produção
             maxAge: COOKIE_MAX_AGE, // 1 hora
             path: "/",
-            sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-            domain:
-              process.env.NODE_ENV === "production"
-                ? process.env.COOKIE_DOMAIN
-                : undefined,
+            sameSite: isProduction ? "none" : "lax", // "none" permite cross-site em HTTPS
+            domain: isProduction ? process.env.COOKIE_DOMAIN : undefined,
           });
 
           return response.status(200).json({
@@ -180,17 +189,26 @@ export class UserController {
             audience: process.env.JWT_AUDIENCE,
           });
 
+          // Detectar se está em produção baseado na URL do frontend
+          const isProduction =
+            process.env.FRONT_END_BASE_URL?.includes("vercel.app") ||
+            process.env.FRONT_END_BASE_URL?.includes("render.com") ||
+            process.env.NODE_ENV === "production";
+
+          console.log("🍪 Configurando cookie JWT (login):", {
+            isProduction,
+            frontendUrl: process.env.FRONT_END_BASE_URL,
+            nodeEnv: process.env.NODE_ENV,
+          });
+
           // Definir cookie com o JWT
           response.cookie("jwt", token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production" ? true : false,
+            secure: isProduction, // HTTPS obrigatório em produção
             maxAge: COOKIE_MAX_AGE, // 1 hora
             path: "/",
-            sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-            domain:
-              process.env.NODE_ENV === "production"
-                ? process.env.COOKIE_DOMAIN
-                : undefined,
+            sameSite: isProduction ? "none" : "lax", // "none" permite cross-site em HTTPS
+            domain: isProduction ? process.env.COOKIE_DOMAIN : undefined,
           });
 
           request.login(user, (error: unknown) => {
@@ -248,16 +266,24 @@ export class UserController {
           });
         }
 
+        // Detectar se está em produção
+        const isProduction =
+          process.env.FRONT_END_BASE_URL?.includes("vercel.app") ||
+          process.env.FRONT_END_BASE_URL?.includes("render.com") ||
+          process.env.NODE_ENV === "production";
+
+        console.log("🍪 Limpando cookies (logout):", {
+          isProduction,
+          frontendUrl: process.env.FRONT_END_BASE_URL,
+        });
+
         // Limpeza segura de TODOS os cookies de autenticação
         const cookieOptions = {
           httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
+          secure: isProduction,
           path: "/",
-          domain:
-            process.env.NODE_ENV === "production"
-              ? process.env.COOKIE_DOMAIN
-              : undefined,
-          sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+          domain: isProduction ? process.env.COOKIE_DOMAIN : undefined,
+          sameSite: isProduction ? "none" : "lax",
         } as const;
 
         // Limpar cookie JWT

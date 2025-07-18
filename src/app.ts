@@ -15,18 +15,24 @@ import JwtAuthService from "./services/JwtAuthService";
 
 const corsOptions = {
   origin: function (origin: any, callback: any) {
-    // Em desenvolvimento, permitir requests sem origin (ex: mobile apps, Postman)
+    console.log(`🌐 CORS - Origin recebido: ${origin || "undefined"}`);
+
     const allowedOrigins = [
-      process.env.FRONT_END_BASE_URL || "http://localhost:3000",
+      process.env.FRONT_END_BASE_URL,
       "http://localhost:3000",
       "http://localhost:5173", // Vite default
       "http://127.0.0.1:3000",
       "http://127.0.0.1:5173",
-    ];
+      "https://blog-app-nextjs-weld.vercel.app", // Backup hardcoded
+    ].filter(Boolean); // Remove valores undefined/null
+
+    console.log(`🔍 Origins permitidos:`, allowedOrigins);
 
     if (!origin || allowedOrigins.includes(origin)) {
+      console.log("✅ CORS - Origin permitido");
       callback(null, true);
     } else {
+      console.log("❌ CORS - Origin não permitido:", origin);
       callback(new Error("Não permitido pelo CORS"));
     }
   },
@@ -63,24 +69,49 @@ const jwtAuthService = new JwtAuthService(passport);
 jwtAuthService.configure();
 
 // SESSIONS
+console.log("🍪 Configurando sessões...");
+
+// Detectar se está em produção baseado na URL do frontend
+const isProduction =
+  process.env.FRONT_END_BASE_URL?.includes("vercel.app") ||
+  process.env.FRONT_END_BASE_URL?.includes("render.com") ||
+  process.env.NODE_ENV === "production";
+
+console.log("🔍 Modo de produção detectado:", {
+  isProduction,
+  frontendUrl: process.env.FRONT_END_BASE_URL,
+  nodeEnv: process.env.NODE_ENV || "undefined",
+});
+
+if (!process.env.SESSION_SECRET) {
+  console.error("❌ ERRO CRÍTICO: SESSION_SECRET não definido!");
+  if (isProduction) {
+    process.exit(1);
+  }
+}
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET as string,
-    resave: true,
-    saveUninitialized: true,
+    resave: false,
+    saveUninitialized: false,
     cookie: {
-      secure: process.env.NODE_ENV === "production" ? true : false,
+      secure: isProduction, // HTTPS obrigatório em produção
       httpOnly: true,
       maxAge: COOKIE_MAX_AGE,
       path: "/",
-      domain:
-        process.env.NODE_ENV === "production"
-          ? process.env.COOKIE_DOMAIN
-          : undefined,
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      domain: isProduction ? process.env.COOKIE_DOMAIN : undefined,
+      sameSite: isProduction ? "none" : "lax", // "none" permite cross-site em HTTPS
     },
+    name: "connect.sid",
   }) as unknown as express.RequestHandler
 );
+
+console.log("✅ Sessões configuradas:", {
+  secure: isProduction,
+  sameSite: isProduction ? "none" : "lax",
+  domain: isProduction ? process.env.COOKIE_DOMAIN : "default",
+});
 
 // MIDDLEWARES
 app.use(passport.initialize() as unknown as express.RequestHandler);
