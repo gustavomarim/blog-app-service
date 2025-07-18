@@ -13,28 +13,20 @@ export class UserRoutes {
   }
 
   private initializeRoutes() {
-    // Rotas de autenticação por sessão (existentes)
+    // Rotas essenciais de autenticação
     this.router.post("/register", this.createUser.bind(this));
-    this.router.post("/login", this.login.bind(this));
+    this.router.post("/login", this.login.bind(this)); // Híbrido: sessão + JWT
     this.router.get("/logout", this.logout.bind(this));
 
-    // Novas rotas JWT
-    this.router.post("/jwt-login", this.generateJwtToken.bind(this));
-    this.router.get("/jwt-verify", this.jwtLogin.bind(this));
-
-    // Rota protegida usando JWT (seguindo a documentação)
+    // Rota de perfil unificada (usuário comum + admin)
     this.router.get(
       "/profile",
       passport.authenticate("jwt", { session: false }),
       this.getProfile.bind(this)
     );
 
-    // Rota protegida para admins usando JWT
-    this.router.get(
-      "/admin-profile",
-      passport.authenticate("jwt", { session: false }),
-      this.getAdminProfile.bind(this)
-    );
+    // Rota para verificar status de autenticação (útil pós-logout)
+    this.router.get("/auth-status", this.checkAuthStatus.bind(this));
   }
 
   private async createUser(request: Request, response: Response) {
@@ -57,70 +49,42 @@ export class UserRoutes {
     }
   }
 
-  private async generateJwtToken(request: Request, response: Response) {
-    try {
-      return await this.userController.generateJwtToken(request, response);
-    } catch (error) {
-      console.error(error, "Erro ao gerar token JWT");
-    }
-  }
-
-  private async jwtLogin(
-    request: Request,
-    response: Response,
-    next: NextFunction
-  ) {
-    try {
-      return await this.userController.jwtLogin(request, response, next);
-    } catch (error) {
-      console.error(error, "Erro na autenticação JWT");
-    }
-  }
-
-  // Rota protegida usando JWT (seguindo a documentação)
+  // Rota de perfil unificada (usuário comum + admin)
   private async getProfile(request: Request, response: Response) {
     try {
-      // O usuário já foi autenticado pelo middleware JWT
       const user = request.user as any;
 
-      return response.status(200).json({
-        message: "Perfil do usuário autenticado via JWT",
-        user: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-          isAdmin: user.isAdmin,
-        },
-      });
-    } catch (error) {
-      console.error(error, "Erro ao obter perfil");
-      return response.status(500).json({
-        error: "Erro interno do servidor",
-      });
-    }
-  }
+      // Resposta base do usuário
+      const userProfile = {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        isAdmin: user.isAdmin,
+      };
 
-  private async getAdminProfile(request: Request, response: Response) {
-    try {
-      const user = request.user as any;
-
-      if (!user.isAdmin) {
-        return response.status(403).json({
-          error: "Acesso negado: você precisa ser um administrador",
+      // Se for admin, incluir informações administrativas
+      if (user.isAdmin) {
+        return response.status(200).json({
+          message: "Perfil do administrador autenticado",
+          user: userProfile,
+          adminFeatures: {
+            canManagePosts: true,
+            canManageCategories: true,
+            canManageUsers: true,
+            dashboardAccess: true,
+          },
+          type: "admin",
         });
       }
 
+      // Se for usuário comum
       return response.status(200).json({
-        message: "Perfil do administrador autenticado via JWT",
-        user: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-          isAdmin: user.isAdmin,
-        },
+        message: "Perfil do usuário autenticado",
+        user: userProfile,
+        type: "user",
       });
     } catch (error) {
-      console.error(error, "Erro ao obter perfil do admin");
+      console.error(error, "Erro ao obter perfil");
       return response.status(500).json({
         error: "Erro interno do servidor",
       });
@@ -136,6 +100,77 @@ export class UserRoutes {
       return await this.userController.logout(request, response, next);
     } catch (error) {
       console.error(error, "Erro ao fazer logout");
+    }
+  }
+
+  // Verifica status de autenticação sem falhar (útil para verificar pós-logout)
+  private async checkAuthStatus(request: Request, response: Response) {
+    try {
+      // Tentar autenticar sem forçar erro
+      passport.authenticate(
+        "jwt",
+        { session: false },
+        (err: unknown, user: any, info: any) => {
+          const hasJwtCookie = !!request.cookies?.jwt;
+          const hasSessionCookie = !!request.cookies?.["connect.sid"];
+          const hasAuthHeader = !!request.headers.authorization;
+
+          if (err) {
+            return response.status(200).json({
+              authenticated: false,
+              reason: "authentication_error",
+              cookies: {
+                jwt: hasJwtCookie,
+                session: hasSessionCookie,
+              },
+              headers: {
+                authorization: hasAuthHeader,
+              },
+              message: "Erro na autenticação",
+            });
+          }
+
+          if (!user) {
+            return response.status(200).json({
+              authenticated: false,
+              reason: info?.message || "token_invalid_or_expired",
+              cookies: {
+                jwt: hasJwtCookie,
+                session: hasSessionCookie,
+              },
+              headers: {
+                authorization: hasAuthHeader,
+              },
+              message: "Usuário não autenticado - logout bem-sucedido",
+            });
+          }
+
+          // Usuário ainda autenticado
+          return response.status(200).json({
+            authenticated: true,
+            user: {
+              id: user._id,
+              email: user.email,
+              isAdmin: user.isAdmin,
+            },
+            cookies: {
+              jwt: hasJwtCookie,
+              session: hasSessionCookie,
+            },
+            headers: {
+              authorization: hasAuthHeader,
+            },
+            message: "Usuário ainda autenticado",
+          });
+        }
+      )(request, response);
+    } catch (error) {
+      console.error("Erro ao verificar status de auth:", error);
+      return response.status(500).json({
+        authenticated: false,
+        reason: "internal_error",
+        message: "Erro interno ao verificar autenticação",
+      });
     }
   }
 
